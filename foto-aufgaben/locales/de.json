@@ -43,5 +43,12 @@
   "noMembers": "Die Haushaltsmitglieder konnten nicht geladen werden. Du kannst Aufgaben ohne Zuweisung erstellen.",
   "openTasks": "Zu den Aufgaben",
   "truncated": "Es konnten höchstens 5000 Zeichen übernommen werden. Fotografiere längere Texte in Abschnitten.",
-  "tooManyPending": "Prüfe und speichere zuerst die vorhandenen Vorschläge. Pro Durchgang sind bis zu 30 offene Aufgaben möglich."
+  "tooManyPending": "Prüfe und speichere zuerst die vorhandenen Vorschläge. Pro Durchgang sind bis zu 30 offene Aufgaben möglich.",
+  "attachPhoto": "Originalfoto anhängen ({name})",
+  "attachmentPermission": "Zum Anhängen brauchst du Schreibrechte für Dokumente.",
+  "attachmentOptions": "Die Dateivorgaben von Yuvomi sind momentan nicht verfügbar. Lade die Seite neu, um das Foto anzuhängen.",
+  "attachmentFormat": "Yuvomi unterstützt dieses Originalformat nicht als Anhang. Wähle ein Foto im Format JPEG, PNG oder WebP.",
+  "attachmentSize": "Das Originalfoto überschreitet die Dateigrößengrenze für Yuvomi-Dokumente.",
+  "attachmentFailed": "Die Aufgabe ist gespeichert. Das Foto konnte nicht angehängt werden. Speichere erneut, um den Anhang erneut zu versuchen.",
+  "savedWithAttachment": "Mit Originalfoto gespeichert"
 }

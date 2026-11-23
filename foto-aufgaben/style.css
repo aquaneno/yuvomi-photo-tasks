@@ -48,3 +48,14 @@
 .foto-aufgaben [role="status"]:empty {
   display: none;
 }
+
+.foto-aufgaben .photo-fields .photo-attachment-option {
+  display: flex;
+  align-items: baseline;
+  overflow-wrap: anywhere;
+}
+
+.foto-aufgaben .photo-attachment-option input {
+  inline-size: auto;
+  flex: none;
+}

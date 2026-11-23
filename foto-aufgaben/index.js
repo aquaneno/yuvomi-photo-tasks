@@ -2,6 +2,7 @@ import { api } from '/api.js';
 import { t } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { recognizePhoto } from './ocr.js';
+import { attachPhoto, photoMime, readFileAsDataUrl } from './attachment.js';
 import { draftTasks, MAX_TITLE, MAX_DESCRIPTION, MAX_TASKS } from './drafts.js';
 
 const EXTENSION = 'foto-aufgaben';
@@ -11,12 +12,7 @@ const tr = (key, vars) => t('extensions.' + EXTENSION + '.' + key, vars);
 const label = (key, vars) => esc(tr(key, vars));
 
 async function preparePhoto(file, signal) {
-  const dataUrl = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
+  const dataUrl = await readFileAsDataUrl(file);
   if (signal.aborted) return null;
 
   const image = new Image();
@@ -129,6 +125,13 @@ export async function render(container, { signal }) {
           <option value="all">${label('all')}</option>
         </select>
       </label>
+      <div data-attachment hidden>
+        <label class="photo-attachment-option">
+          <input type="checkbox" name="attach_photo">
+          <span data-attachment-name></span>
+        </label>
+        <p class="form-hint" data-attachment-hint hidden></p>
+      </div>
       <p role="status"></p>
       <div class="photo-actions">
         <button type="button" class="btn btn--secondary">${label('remove')}</button>
@@ -151,7 +154,13 @@ export async function render(container, { signal }) {
   }
   intake.inert = false;
 
+  const mayUpload = permissions.modules.documents === 'write';
+  const uploadOptions = mayUpload
+    ? api.get('/documents/meta/options', { signal }).then(({ data }) => data).catch(() => null)
+    : Promise.resolve(null);
+
   let jpeg = null;
+  let selectedPhoto = null;
   let busy = false;
   let saving = false;
   let saved = 0;
@@ -179,6 +188,7 @@ export async function render(container, { signal }) {
     input.value = '';
     if (!file || busy || saving) return;
     jpeg = null;
+    selectedPhoto = null;
     preview.hidden = true;
     preview.removeAttribute('src');
     if (file.size > FILE_LIMIT) {
@@ -193,6 +203,7 @@ export async function render(container, { signal }) {
       const photo = await preparePhoto(file, signal);
       if (signal.aborted) return;
       jpeg = photo.jpeg;
+      selectedPhoto = { file, uploads: new Map() };
       preview.src = photo.preview;
       preview.hidden = false;
       ocrStatus.textContent = '';
@@ -234,7 +245,7 @@ export async function render(container, { signal }) {
     }
   });
 
-  function appendDraft(draft) {
+  function appendDraft(draft, photo, options) {
     list.insertAdjacentHTML('beforeend', draftMarkup);
     const fieldset = list.lastElementChild;
     const get = (name) => fieldset.querySelector('[name="' + name + '"]');
@@ -243,6 +254,23 @@ export async function render(container, { signal }) {
     const due = get('due_date');
     const assignee = get('assigned_to');
     const visibility = get('visibility');
+    const attachment = get('attach_photo');
+    if (photo) {
+      const hint = fieldset.querySelector('[data-attachment-hint]');
+      fieldset.querySelector('[data-attachment]').hidden = false;
+      fieldset.querySelector('[data-attachment-name]').textContent = tr('attachPhoto', { name: photo.file.name });
+      let unavailable;
+      if (!mayUpload) unavailable = 'attachmentPermission';
+      else if (!Array.isArray(options?.allowed_mime_types)) unavailable = 'attachmentOptions';
+      else if (!options.allowed_mime_types.includes(photoMime(photo.file))) unavailable = 'attachmentFormat';
+      else if (photo.file.size > options.max_file_size) unavailable = 'attachmentSize';
+      if (unavailable) {
+        attachment.disabled = true;
+        hint.textContent = tr(unavailable);
+        hint.hidden = false;
+      }
+    }
+    const canAttach = Boolean(photo && !attachment.disabled);
 
     title.value = draft.title;
     description.value = draft.description;
@@ -251,7 +279,7 @@ export async function render(container, { signal }) {
     fieldset.querySelector('legend').textContent = tr('draft', { number: ++nextNumber });
 
     const remove = fieldset.querySelector('button');
-    const row = { fieldset, title, description, due, assignee, visibility, remove, status: fieldset.querySelector('[role="status"]') };
+    const row = { title, description, due, assignee, visibility, photo, attachment, canAttach, remove, status: fieldset.querySelector('[role="status"]') };
     rows.add(row);
     on(title, 'input', () => title.setCustomValidity(''));
     on(remove, 'click', () => {
@@ -280,9 +308,9 @@ export async function render(container, { signal }) {
     }
     busy = true;
     refreshControls();
-    await membersReady;
+    const [options] = await Promise.all([selectedPhoto ? uploadOptions : null, membersReady]);
     if (signal.aborted) return;
-    const titles = result.drafts.map(appendDraft);
+    const titles = result.drafts.map((draft) => appendDraft(draft, selectedPhoto, options));
     text.value = '';
     ocrStatus.textContent = '';
     reviewSection.hidden = false;
@@ -293,8 +321,9 @@ export async function render(container, { signal }) {
 
   function lockRow(row, locked) {
     for (const field of [row.title, row.description, row.due, row.assignee, row.visibility, row.remove]) {
-      field.disabled = locked;
+      field.disabled = locked || Boolean(row.taskId);
     }
+    row.attachment.disabled = locked || Boolean(row.taskId) || !row.canAttach;
   }
 
   on(form, 'submit', async (event) => {
@@ -327,18 +356,33 @@ export async function render(container, { signal }) {
         };
       }
       try {
-        await api.post('/tasks', row.attempt.body, {
-          headers: { 'Idempotency-Key': row.attempt.key },
-          signal,
-        });
-        if (signal.aborted) return;
+        if (!row.taskId) {
+          const { data } = await api.post('/tasks', row.attempt.body, {
+            headers: { 'Idempotency-Key': row.attempt.key },
+            signal,
+          });
+          if (signal.aborted) return;
+          if (!data?.id) throw new Error('Task creation returned no ID');
+          row.taskId = data.id;
+          row.uncertain = false;
+          saved += 1;
+          find('[data-tasks-link]').hidden = false;
+        }
+        if (row.attachment.checked) {
+          await attachPhoto(row.taskId, row.attempt.body, row.photo, idempotencyKey, signal);
+          if (signal.aborted) return;
+        }
         row.done = true;
         row.remove.hidden = true;
-        row.status.textContent = tr('savedRow');
-        saved += 1;
-        find('[data-tasks-link]').hidden = false;
+        row.photo = null;
+        row.status.textContent = tr(row.attachment.checked ? 'savedWithAttachment' : 'savedRow');
       } catch (error) {
         if (signal.aborted) return;
+        if (row.taskId) {
+          row.status.textContent = tr('attachmentFailed');
+          if ([401, 403, 429].includes(error.status)) break;
+          continue;
+        }
         const uncertain = row.uncertain || !error.status || error.status >= 500 || error.status === 409;
         row.uncertain = uncertain;
         if (!uncertain) row.attempt = null;

@@ -19,9 +19,9 @@ Ab Version **1.1.0** kannst du nach erfolgreichem Update den alten OCR-Container
 1. **Foto-Aufgaben** öffnen und **Foto aufnehmen** oder **Bild auswählen** wählen.
 2. **Text erkennen** antippen. Der Browser lädt das OCR-Modul und die Sprachmodelle vom eigenen Yuvomi-Server. Das erstmalige Laden kann bei einer langsamen Verbindung etwas dauern.
 3. Den Text korrigieren, eine Aufteilung wählen und **Vorschläge erstellen** antippen.
-4. Die Aufgaben prüfen und **Aufgaben speichern** wählen.
+4. Die Aufgaben prüfen. Bei Bedarf pro Aufgabe **Originalfoto anhängen** aktivieren und **Aufgaben speichern** wählen.
 
-Das Foto bleibt im Browser. Yuvomi erhält beim Speichern nur die bestätigten Aufgabenfelder. Die Erkennungsqualität hängt von Schärfe, Beleuchtung und Schrift ab. Bei Handschrift kannst du auf dem iPhone alternativ den Text mit **Live Text** kopieren und in das Modul einfügen.
+Die Texterkennung läuft auf dem Gerät. Wenn du den Anhang auswählst, speichert Yuvomi die unveränderte Originaldatei zusätzlich als verknüpftes Dokument im Systemordner **Aufgaben**. Dafür brauchst du Schreibrechte für **Dokumente**. Die Freigabe des Dokuments entspricht beim Speichern der Sichtbarkeit und Zuweisung der Aufgabe. Spätere Änderungen der Aufgabe ändern die Dokumentfreigabe nicht. Unterstützte Bildformate für Anhänge sind JPEG, PNG und WebP innerhalb des Dateilimits deiner Yuvomi-Instanz. Die Erkennungsqualität hängt von Schärfe, Beleuchtung und Schrift ab. Bei Handschrift kannst du auf dem iPhone alternativ den Text mit **Live Text** kopieren und in das Modul einfügen.
 
 ## OCR-Assets reproduzieren
 

@@ -43,5 +43,12 @@
   "noMembers": "Household members could not be loaded. You can create unassigned tasks.",
   "openTasks": "Go to tasks",
   "truncated": "Up to 5000 characters were imported. Photograph longer text in sections.",
-  "tooManyPending": "Review and save the existing suggestions first. You can review up to 30 pending tasks at once."
+  "tooManyPending": "Review and save the existing suggestions first. You can review up to 30 pending tasks at once.",
+  "attachPhoto": "Attach original photo ({name})",
+  "attachmentPermission": "You need write access to Documents to attach a photo.",
+  "attachmentOptions": "Yuvomi’s file requirements are unavailable. Reload the page to attach the photo.",
+  "attachmentFormat": "Yuvomi cannot attach this original format. Choose a JPEG, PNG or WebP photo.",
+  "attachmentSize": "The original photo exceeds Yuvomi’s document size limit.",
+  "attachmentFailed": "The task was saved. The photo could not be attached. Save again to retry the attachment.",
+  "savedWithAttachment": "Saved with original photo"
 }
