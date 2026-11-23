@@ -1,10 +1,10 @@
 import { api } from '/api.js';
 import { t } from '/i18n.js';
 import { esc } from '/utils/html.js';
+import { recognizePhoto } from './ocr.js';
 import { draftTasks, MAX_TITLE, MAX_DESCRIPTION, MAX_TASKS } from './drafts.js';
 
 const EXTENSION = 'foto-aufgaben';
-const OCR_PATH = '/api/extensions/' + EXTENSION;
 const FILE_LIMIT = 30 * 1024 * 1024;
 const EDGE_LIMIT = 2200;
 const tr = (key, vars) => t('extensions.' + EXTENSION + '.' + key, vars);
@@ -36,20 +36,6 @@ async function preparePhoto(file, signal) {
   const jpeg = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.88));
   if (!jpeg) throw new Error('JPEG encoding failed');
   return { jpeg, preview };
-}
-
-async function callOcr(path, options) {
-  const response = await fetch(OCR_PATH + path, {
-    credentials: 'same-origin',
-    cache: 'no-store',
-    redirect: 'error',
-    ...options,
-  });
-  if (!response.ok) {
-    const message = { 401: 'readDenied', 403: 'readDenied', 429: 'readBusy', 504: 'readSlow' };
-    throw Object.assign(new Error('OCR request failed'), { label: message[response.status] });
-  }
-  return response.json();
 }
 
 function option(value, text) {
@@ -229,14 +215,7 @@ export async function render(container, { signal }) {
     refreshControls();
     ocrStatus.textContent = tr('reading');
     try {
-      const { token } = await callOcr('/csrf', { signal });
-      if (signal.aborted) return;
-      const result = await callOcr('/recognize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'image/jpeg', 'X-Photo-CSRF': token },
-        body: jpeg,
-        signal,
-      });
+      const result = await recognizePhoto(jpeg, signal);
       if (signal.aborted) return;
       if (result.text) {
         const combined = [text.value.trim(), result.text].filter(Boolean).join('\n');

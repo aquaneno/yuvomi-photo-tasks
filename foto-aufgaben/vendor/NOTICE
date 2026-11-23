@@ -1,0 +1,9 @@
+Tesseract.js Core 7.0.0, Apache-2.0
+https://github.com/naptha/tesseract.js-core
+The LSTM core was converted to JavaScript with Binaryen wasm2js and minified.
+The runtime was adapted for JavaScript module loading.
+
+Tesseract tessdata_fast 4.1.0 models (deu and eng), Apache-2.0
+https://github.com/tesseract-ocr/tessdata_fast/tree/4.1.0
+The model files are gzip-compressed and Base64-encoded in JSON for delivery
+through the Yuvomi module installer.
