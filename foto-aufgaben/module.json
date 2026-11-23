@@ -1,0 +1,20 @@
+{
+  "manifestVersion": 1,
+  "id": "foto-aufgaben",
+  "name": "Foto-Aufgaben",
+  "version": "1.0.0",
+  "description": "Erstellt Yuvomi-Aufgaben aus fotografierten Zetteln und Listen.",
+  "entry": "index.js",
+  "style": "style.css",
+  "icon": "camera",
+  "accent": "#176B66",
+  "menu": { "show": true, "label": "Foto-Aufgaben", "labelKey": "menu", "icon": "camera", "order": 100 },
+  "page": { "composition": "form", "width": "reading" },
+  "i18n": { "defaultLocale": "de" },
+  "capabilities": {
+    "permissions": {
+      "module": { "label": "Foto-Aufgaben", "labelKey": "menu", "icon": "camera" }
+    },
+    "api": { "prefix": "/api/extensions/foto-aufgaben" }
+  }
+}

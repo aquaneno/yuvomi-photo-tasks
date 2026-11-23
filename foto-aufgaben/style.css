@@ -1,0 +1,50 @@
+.foto-aufgaben .photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.foto-aufgaben .photo-actions > button {
+  min-block-size: 44px;
+}
+
+.foto-aufgaben .photo-fields,
+.foto-aufgaben .photo-drafts {
+  display: grid;
+  gap: .75rem;
+}
+
+.foto-aufgaben .photo-preview {
+  display: block;
+  max-inline-size: 100%;
+  max-block-size: 18rem;
+  object-fit: contain;
+}
+
+.foto-aufgaben [hidden] {
+  display: none;
+}
+
+.foto-aufgaben .photo-draft {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: .5rem;
+  margin: 0;
+  min-inline-size: 0;
+  padding: .75rem;
+}
+
+.foto-aufgaben .photo-fields label {
+  display: grid;
+  gap: .25rem;
+}
+
+.foto-aufgaben .photo-fields :is(textarea, input, select) {
+  box-sizing: border-box;
+  font-size: 1rem;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.foto-aufgaben [role="status"]:empty {
+  display: none;
+}

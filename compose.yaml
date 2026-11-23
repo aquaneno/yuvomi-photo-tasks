@@ -1,0 +1,21 @@
+services:
+  foto-aufgaben-ocr:
+    build: ./ocr
+    restart: unless-stopped
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Yuvomi HTTPS-Adresse setzen}
+      YUVOMI_INTERNAL_URL: ${YUVOMI_INTERNAL_URL:-http://yuvomi:3000}
+    networks:
+      - yuvomi
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  yuvomi:
+    external: true
+    name: ${YUVOMI_DOCKER_NETWORK:?Gemeinsames Docker-Netz setzen}
